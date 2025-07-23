@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Video Motion Detection App</title>
+</head>
+<body>
+  <h1>Upload a Video</h1>
+  <form id="upload-form">
+    <input type="file" id="video-file" accept="video/*" required />
+    <button type="submit">Upload & Process</button>
+  </form>
+
+  <h2>Result:</h2>
+  <video id="result-video" controls style="display: none; max-width: 100%;"></video>
+
+  <script>
+    const form = document.getElementById("upload-form");
+    const resultVideo = document.getElementById("result-video");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const fileInput = document.getElementById("video-file");
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      const response = await fetch("http://localhost:8000/process-video/", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        resultVideo.src = url;
+        resultVideo.style.display = "block";
+      } else {
+        alert("Failed to process video");
+      }
+    });
+  </script>
+</body>
+</html>

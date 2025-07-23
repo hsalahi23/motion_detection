@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sports Motion Detection</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 40px;
+      text-align: center;
+    }
+
+    #videoContainer {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    video {
+      max-width: 45%;
+      border: 2px solid #ccc;
+    }
+
+    #loading {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #007BFF;
+    }
+  </style>
+</head>
+<body>
+  <h1>Upload Video for Motion Detection</h1>
+
+  <form id="uploadForm">
+    <input type="file" id="videoFile" name="file" accept="video/*" required />
+    <button type="submit">Upload & Process</button>
+  </form>
+
+  <div id="loading" style="display: none;">Processing video, please wait...</div>
+
+  <div id="videoContainer" style="display: none;">
+    <div>
+      <h3>Original Video</h3>
+      <video id="inputVideo" controls></video>
+    </div>
+    <div>
+      <h3>Processed Output</h3>
+      <video id="outputVideo" controls></video>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("uploadForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const fileInput = document.getElementById("videoFile");
+      const inputVideo = document.getElementById("inputVideo");
+      const outputVideo = document.getElementById("outputVideo");
+      const videoContainer = document.getElementById("videoContainer");
+      const loading = document.getElementById("loading");
+
+      if (!fileInput.files.length) return;
+
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Show input video
+      const inputURL = URL.createObjectURL(file);
+      inputVideo.src = inputURL;
+      inputVideo.load();
+
+      loading.style.display = "block";
+      videoContainer.style.display = "none";
+
+      try {
+        const response = await fetch("http://localhost:8000/process-video/", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to process video.");
+        }
+
+        const blob = await response.blob();
+        const outputURL = URL.createObjectURL(blob);
+        outputVideo.src = outputURL;
+        outputVideo.load();
+
+        videoContainer.style.display = "flex";
+      } catch (err) {
+        alert("Error: " + err.message);
+      } finally {
+        loading.style.display = "none";
+      }
+    });
+  </script>
+</body>
+</html>
